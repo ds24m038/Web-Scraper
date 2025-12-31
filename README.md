@@ -1,12 +1,14 @@
 # Azure Web Scraper
 
-A Python-based web scraping pipeline that discovers URLs via Bing Search, scrapes web pages using Playwright, and uploads results to Azure Blob Storage with rich metadata.
+A Python-based web scraping pipeline that discovers URLs via DuckDuckGo Search, scrapes web pages using Playwright, and uploads results to Azure Blob Storage with rich metadata.
+
+> **📝 Note:** This project was originally implemented using the **Bing Web Search API** via an Azure Students Account. After Microsoft announced the [deprecation of Bing Search APIs](https://learn.microsoft.com/en-us/bing/search-apis/) (end-of-life: August 2025), the search functionality was migrated to **DuckDuckGo Search**, which is free and requires no API key.
 
 ---
 
 ## Features
 
-- 🔍 **URL Discovery** - Find relevant pages using Bing Web Search API
+- 🔍 **URL Discovery** - Find relevant pages using DuckDuckGo Search (free, no API key required)
 - 🌐 **Recursive Scraping** - Follow links across multiple tiers with configurable depth
 - 📄 **PDF Export** - Save complete page renders as PDF files
 - 📥 **Auto Download** - Detect and save linked files (PDFs, documents, etc.)
@@ -19,7 +21,7 @@ A Python-based web scraping pipeline that discovers URLs via Bing Search, scrape
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌────────────────┐     ┌──────────────┐
-│  Bing Search    │ ──▶ │  Web Scraping    │ ──▶ │  Local Output  │ ──▶ │  Azure Blob  │
+│  DuckDuckGo     │ ──▶ │  Web Scraping    │ ──▶ │  Local Output  │ ──▶ │  Azure Blob  │
 │  (Optional)     │     │  (Playwright)    │     │  (PDFs + JSON) │     │  Storage     │
 └─────────────────┘     └──────────────────┘     └────────────────┘     └──────────────┘
 ```
@@ -46,8 +48,7 @@ AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=...
 # Optional: customize container name (default: 'webscraper')
 AZURE_CONTAINER_NAME=my-container
 
-# Required only if using Bing Search (useSearch=True)
-BING_SEARCH_SUBSCRIPTION_KEY=your_key_here
+# Note: DuckDuckGo Search requires no API key!
 ```
 
 ### 3. Configure Scraping Parameters
@@ -58,7 +59,7 @@ Edit `main.py`:
 # URLs to scrape directly
 topLevelURLs = ['https://example.com/']
 
-# Or use Bing Search to discover URLs
+# Or use DuckDuckGo Search to discover URLs
 useSearch = True
 keywords = 'topic1,topic2,topic3'
 
@@ -130,13 +131,13 @@ Each scraped item includes:
 
 ### `search.py`
 
-**URL discovery** using Bing Web Search API.
+**URL discovery** using DuckDuckGo Search (free, no API key required).
 
 | Function | Description |
 |----------|-------------|
-| `__init__()` | Loads `BING_SEARCH_SUBSCRIPTION_KEY` from `.env` |
+| `__init__()` | Initializes search class (no API key needed) |
 | `searchTermExtractor()` | Splits keywords by comma (placeholder for LLM enhancement) |
-| `search()` | Queries Bing API, returns list of URLs |
+| `search()` | Queries DuckDuckGo, returns list of URLs |
 | `runSearch()` | Orchestrates search across all keywords |
 
 ---
@@ -187,7 +188,7 @@ Each scraped item includes:
 | `azure-storage-blob` | Azure Blob Storage client |
 | `azure-core` | Azure SDK core |
 | `azure-identity` | Azure authentication |
-| `microsoft-bing-websearch` | Bing Search API client |
+| `duckduckgo-search` | DuckDuckGo Search (free, no API key) |
 | `python-dotenv` | Load `.env` files |
 | `tldextract` | Parse domains from URLs |
 

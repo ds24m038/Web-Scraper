@@ -38,7 +38,7 @@ async def main(useSearch: bool, keywords: list, topLevelURLs: list, tierLimit: i
     
     # upload data to blob storage
     print(directory)
-    await blob.uploadToBlob(directory)
+    await blob.uploadToBlob(directory)  # upload everything also in the container inside the corresponding Azure Storage Account  
     
 asyncio.run(main(useSearch=useSearch,
                     keywords=keywords,

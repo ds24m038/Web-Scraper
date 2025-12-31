@@ -1,7 +1,7 @@
 azure-core
 azure-identity
 azure-storage-blob
-microsoft-bing-websearch
+duckduckgo-search
 playwright
 python-dotenv
 tldextract

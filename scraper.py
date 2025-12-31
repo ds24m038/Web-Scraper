@@ -33,6 +33,37 @@ class ScraperClass:
         self.excludedDomains = set(["linkedin", "youtube", "twitter", "x", "facebook", "bluesky",])
         # list for storing scraping hierarchy
         self.hierarchy = []
+        # common cookie consent button selectors (ordered by specificity)
+        self.consentSelectors = [
+            # Common consent button texts
+            'button:has-text("Accept")',
+            'button:has-text("Accept all")',
+            'button:has-text("Accept All")',
+            'button:has-text("Accept cookies")',
+            'button:has-text("Accept Cookies")',
+            'button:has-text("Agree")',
+            'button:has-text("I agree")',
+            'button:has-text("I Agree")',
+            'button:has-text("Consent")',
+            'button:has-text("OK")',
+            'button:has-text("Got it")',
+            'button:has-text("Allow")',
+            'button:has-text("Allow all")',
+            'button:has-text("Allow All")',
+            'button:has-text("Continue")',
+            # Common class/ID patterns
+            '[class*="accept"]',
+            '[class*="consent"]',
+            '[id*="accept"]',
+            '[id*="consent"]',
+            '.fc-cta-consent',  # Funding Choices (Google)
+            '#onetrust-accept-btn-handler',  # OneTrust
+            '.cc-accept',  # Cookie Consent
+            '.cmplz-accept',  # Complianz
+            '[data-testid="cookie-accept"]',
+            '[aria-label*="Accept"]',
+            '[aria-label*="accept"]',
+        ]
 
     # main function coordinating the scraping & auxiliary functions
     async def runScraper(self, topLevelURLs: list):
@@ -119,6 +150,10 @@ class ScraperClass:
                 await page.goto(url)
                 # wait for page to load properly
                 await asyncio.sleep(0.5)
+                # dismiss cookie consent banners if present
+                await self.dismissCookieConsent(page)
+                # additional wait after dismissing consent
+                await asyncio.sleep(0.3)
                 # get title & duplicate free lists for links & texts
                 linkLocator = page.locator('a')
                 #textLocator = page.locator('p, h1, h2, h3, h4, h5, h6, span, div')
@@ -218,4 +253,25 @@ class ScraperClass:
     def generateHash(self, input: str, length: int):
         sha256Hash = hashlib.sha256(input.encode()).digest()
         encodedHash = base64.b64encode(sha256Hash).decode('utf-8')
-        return encodedHash.replace('/', '').replace('+', '').replace('=', '')[:length]
+        return encodedHash.replace('//', '').replace('+', '').replace('=', '')[:length]
+    
+    # function for dismissing cookie consent banners
+    async def dismissCookieConsent(self, page):
+        """Try to dismiss cookie consent banners by clicking common accept buttons."""
+        try:
+            for selector in self.consentSelectors:
+                try:
+                    # Check if the element exists and is visible
+                    element = page.locator(selector).first
+                    if await element.is_visible(timeout=500):
+                        await element.click(timeout=1000)
+                        print(f"CONSENT DISMISSED: clicked '{selector}'")
+                        # Wait for modal to disappear
+                        await page.wait_for_timeout(500)
+                        return True
+                except Exception:
+                    # Selector not found or not clickable, try next
+                    continue
+        except Exception as e:
+            print(f"CONSENT HANDLING ERROR: {e}")
+        return False
